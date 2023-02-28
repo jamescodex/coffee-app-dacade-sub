@@ -9,8 +9,8 @@ In this tutorial, we will be building a decentralized application (dapp) that wi
 ### Table Of Contents
 - [Introduction](#introduction).
 - [Prerequisites](#prerequisites).
-- [Requirements](#requirements).
 - [Tech Stack](#tech-stack).
+- [Requirements](#requirements).
 - [Smart Contract Development](#smart-contract-development).
 - [Smart Contract Deployment](#smart-contract-deployment)
 - [Front-end Development](#front-end-development)
