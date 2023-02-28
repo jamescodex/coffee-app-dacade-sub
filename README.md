@@ -45,10 +45,11 @@ In this section of the tutorial, we will be building the smart contract that wil
 
 To use Remix, open your browser and go to the Remix IDE using this [link](https://remix.ethereum.org/). Navigate to the folder section and create a new file and name it `CoffeeContract.sol`. After creating the file, Remix will automatically open that file in your browser. You should have an empty file open in your browser by now.
 
-Start the file by setting the file license. Click on [this link](https://spdx.org) to learn more about SPDX licensing. We will be using the MIT license in our contract.
+Start the file by setting the file license. Click on [this link](https://spdx.org) to learn more about SPDX licensing. We will be using the MIT license in our contract. Lastly, we will add the compiler version for our file.
 
 ```solidity
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 ```
 
 Next, we will create an interface and name it `IERC20Token`. This interface allows us to interact with ERC20 tokens deployed to the Ethereum and other EVM-compatible chains such as the Celo blockchain.
