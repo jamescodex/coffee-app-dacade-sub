@@ -96,11 +96,11 @@ contract CoffeeContract {}
 ```
 
 After creating our contract, the next step is to fill the body of our contract with the functionalities of our dapp. Inside the body of our contract we will create a struct named `Coffee` and add the following properties inside the struct:
-- `timestamp` - The UNIX Epoch time when a coffee was created. The type is `uint256`
-- `buyer` - Wallet address of the user who purchased the coffee. The type is `address`
+- `timestamp` - The UNIX Epoch time when a coffee was created. The type is `uint256`.
+- `buyer` - Wallet address of the user who purchased the coffee. The type is `address`.
 - `message` - Message sent along with the coffee. The type is `string`.
-- `name` - Name of the user who purchased the coffee. The type is `string`
-- `amount` - Quantity of coffee purchased. The type is `uint256`
+- `name` - Name of the user who purchased the coffee. The type is `string`.
+- `amount` - Quantity of coffee purchased. The type is `uint256`.
 
 Below the struct, we also proceed to create an event that will be emitted when a new coffee is created. We named the event `CreatedCoffee`. The event has three parameters - `buyer`, `message`, and `amount`.
 
@@ -140,11 +140,11 @@ After completely adding the state variables of our contract, we will add the fun
     }
 ```
 
-The next function we will be creating is the `purchasCoffee` function. This function is responsible for making a coffee purchase for the owner of the contract. This function takes in three arguments - `message`, `name`, and `amount`. The `_message` parameter is the message a buyer is attaching to their donation. The `_name` parameter is the name they wish to use to identify themselves while making the donation. The `_amount` is the quantity of coffee they want to purchase for the contract owner. Each cup of coffee will cost the buyer 1 cUSD. We will add a `payable` modifier to the function which will allow the function to make financial transactions.
+The next function we will be creating is the `purchaseCoffee` function. This function is responsible for making a coffee purchase for the owner of the contract. This function takes in three arguments - `message`, `name`, and `amount`. The `_message` parameter is the message a buyer is attaching to their donation. The `_name` parameter is the name they wish to use to identify themselves while making the donation. The `_amount` is the quantity of coffee they want to purchase for the contract owner. Each cup of coffee will cost the buyer 1 cUSD. We will add a `payable` modifier to the function which will allow the function to make financial transactions.
 
 Inside the body of the function, we will first use a `require()` statement to check whether the amount of coffee a user intends to purchase is valid i.e greater than zero (0). If it is less or equal to zero, the function will throw an error with the message "Invalid coffee amount specified".
 
-After the require statement, we will create a new coffee object and add it to the array used to keep track of coffee created i.e `allCoffee`, using the array's `push` method. Inside the coffee object, we will use the `block.timestamp` and `msg.sender` global variables to set the timestamp and buyer property of the Coffee respectively. We will also use the `_message`, `_name`, and `_amount` arguments entered into the function to initialize the other property of the Coffee. We also increased the `coffeeCount` variable by 1 after adding the new coffee to the array that keeps track of all the coffee i.e `allCoffee`.
+After the require statement, we will create a variable called `donationAmount` which stores the donation amount which we can get by multiplying the `_amount` by 1 ether. Next, we will create a new coffee object and add it to the array used to keep track of coffee created i.e `allCoffee`, using the array's `push` method. Inside the coffee object, we will use the `block.timestamp` and `msg.sender` global variables to set the timestamp and buyer property of the Coffee respectively. We will also use the `_message`, `_name`, and `donationAmount` variables to initialize the other property of the Coffee. We also add the `_amount ` to the `coffeeCount` which keeps track of coffee donated.
 
 The next expression that will be added to our function is the one that will be responsible for the transfer of cUSD tokens equivalent to the amount of coffee the buyer is donating. We will use the `IERC20` interface we created earlier to get a connection to the contract cUSD contract deployed to the blockchain. We will then access the `transferFrom()` function from the contract to transfer cUSD tokens from the account of the person calling the contract to the contract owner.
 Check the above to know what the `transferFrom()` function does. We will also wrap the whole operation in a require () statement that will throw an error with the message "Failed to transfer cUSD tokens" if the transaction does not go through.
@@ -160,23 +160,22 @@ Below is the code that does all of the above:
         uint256 _amount
     ) public payable {
         require(_amount > 0, "Invalid coffee amount specified");
-        
+        uint256 donationAmount = _amount * 1 ether;
         allCoffee.push(Coffee(
             block.timestamp,
             msg.sender,
             _message,
             _name,
-            _amount
+            donationAmount
         ));
 
-        coffeeCount = coffeeCount + 1;
+        coffeeCount = coffeeCount + _amount;
 
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
                 owner,
-                // _amount * 1 ether
-                _amount
+                donationAmount
             ),
             "Failed to transfer cUSD tokens"
         );
@@ -189,7 +188,7 @@ Below is the code that does all of the above:
     }
 ```
 
-Next, we will create another function called `getCoffeeCount()` that will return the total number of coffees created so far. The function will have the `public` access modifier because we want everyone to have access to this function. The function will also have the modifier `view` because we don't want the function to make state changes to the contract. Lastly, the function returns a `uint256` value which represents the number of coffees created. Below is the body of our `getCoffeeCount()` function:
+Next, we will create another function called `getCoffeeCount()` that will return the total number of coffee created so far. The function will have the `public` access modifier because we want everyone to have access to this function. The function will also have the modifier `view` because we don't want the function to make state changes to the contract. Lastly, the function returns a `uint256` value which represents the number of coffee created. Below is the body of our `getCoffeeCount()` function:
 
 ```solidity
  function getCoffeeCount() public view returns (uint256) {
@@ -270,23 +269,22 @@ contract CoffeeContract {
         uint256 _amount
     ) public payable {
         require(_amount > 0, "Invalid coffee amount specified");
-        
+        uint256 donationAmount = _amount * 1 ether;
         allCoffee.push(Coffee(
             block.timestamp,
             msg.sender,
             _message,
             _name,
-            _amount
+            donationAmount
         ));
 
-        coffeeCount = coffeeCount + 1;
+        coffeeCount = coffeeCount + _amount;
 
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
                 owner,
-                // _amount * 1 ether
-                _amount
+                donationAmount
             ),
             "Failed to transfer cUSD tokens"
         );
@@ -391,9 +389,9 @@ Then run the command `npm i` to install them.
 
 ### The contracts folder
 Create a new folder inside your `src` folder and name it `contracts`. Inside the **contracts** folder create the following files:
-- buy-coffee.abi.json: For interacting with our deployed contract on the blockchain
-- erc20.abi.json: For interacting with the cUSD contact deployed to the blockchain
-- BuyCoffee.sol: For our contract source code
+- **buy-coffee.abi.json**: For interacting with our deployed contract on the blockchain
+- **erc20.abi.json**: For interacting with the cUSD contact deployed to the blockchain
+- **BuyCoffee.sol**: For our contract source code
 
 Now head to Remix to copy the `BuyCoffee` ABI we mentioned earlier and paste it inside the buy-coffee.abi.json file. Also, copy the BuyCoffee contract from Remix and paste it inside the `BuyCoffee.sol` file. Copy ERC20 abi from [here](https://github.com/dacadeorg/celo-marketplace-dapp/blob/contract/erc20.abi.json)
 
@@ -510,7 +508,7 @@ const App = () => {
       await contract.methods.purchaseCoffee(
         buyerMessage,
         buyerName,
-        amount
+        buyerAmount
       ).send({from: kit.defaultAccount})
     } catch (e) {
       console.log(e)
