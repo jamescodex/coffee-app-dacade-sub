@@ -564,3 +564,6 @@ That is is for our buy-me-coffee dapp that runs on the celo blockchain. Hope you
 The complete source code for our app can be found [in this link](https://github.com/jamescodex/coffee_app)
 
 Thank you for reading!
+
+## About the Author 
+I am a college student with the passion for Web 3 and smart contract development. Love to write about what I have learnt so far.
