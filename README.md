@@ -3,7 +3,7 @@
 ## Introduction 
 Blockchain and Web3 have seen an enormous increase in user base and demand in recent times and this growth and high demand has not slowed down for once. An increase in user base means there is an increase in the demand for innovative solutions that will retain these users.
 
-In this tutorial, we will be building a decentralized application (dapp) that will allow anybody with access to the dapp to donate or tip the creator of the smart contract through the concept of **Buy Me a Coffee*. Every coffee purchased sends some amount of cryptocurrency to the owner's wallet. Follow along to learn how to build this amazing dapp.
+In this tutorial, we will be building a decentralized application (dapp) that will allow anybody with access to the dapp to donate or tip the creator of the smart contract through the concept of **Buy Me a Coffee**. Every coffee purchased sends some amount of cryptocurrency to the owner's wallet. Follow along to learn how to build this amazing dapp.
 
 
 ### Table Of Contents
@@ -132,7 +132,7 @@ Below is the code for all of the descriptions above. Paste the code inside the b
     address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 ```
 
-After completely adding the state variables of our contract, we will add the functions in the next steps. The first function that will be added is the constructor function. The constructor function is executed once and only at construction time. After this time, the constructor function is never executed. Our construction function will be used to initialize the owner of the contract. It will set this owner to whoever deployed the contract. Below is the code for our constructor:
+After completely adding the state variables of our contract, we will add the functions in the next steps. The first function that will be added is the constructor function. The constructor function is executed once and only at construction time. After this time, the constructor function is never executed. Our constructor function will be used to initialize the owner of the contract. It will set this owner to whoever deployed the contract. Below is the code for our constructor:
 
 ```solidity
    constructor () payable {
