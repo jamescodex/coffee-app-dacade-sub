@@ -146,8 +146,10 @@ Below is the code for all of the descriptions above. Paste the code inside the b
     );
 
     Coffee[] allCoffee;
-
+    
+    // Keep track of number of times coffee was purchased
     uint256 coffeeCount;
+    
     address payable immutable owner;
     address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 ```
@@ -159,13 +161,17 @@ After completely adding the state variables of our contract, we will add the fun
     }
 ```
 
-The next function we will be creating is the `purchasCoffee()` function. This function is responsible for making a coffee purchase to the owner of the contract. This function takes in three arguments - `message`, `name`, `amount`. `message` is the message a buyer is attacking to their purchase. `name` is the name they wish to use to identify themselve while making a purchase. `amount` is the quantity of coffee they want to purchase for the contract owner. Each cup of coffee will cost the buyer 1 cUSD. We will add a payable modifier to the function which will allow the function to make financial transactions.
+The next function we will be creating is the `purchasCoffee()` function. This function is responsible for making a coffee purchase to the owner of the contract. This function takes in three arguments - `message`, `name`, `amount`. `message` is the message a buyer is attaching to their purchase. `name` is the name they wish to use to identify themselve while making a purchase. `amount` is the quantity of coffee they want to purchase for the contract owner. Each cup of coffee will cost the buyer 1 cUSD. We will add a payable modifier to the function which will allow the function to make financial transactions.
 
 Inside the body of the function we will first use a `require()` statement to check whether the amount of coffee a user intends to purchase is valid i.e greater than zero (0). If it is less or equal to zero, the function will throw an error with the message "Invalid coffee amount specified".
 
 After the require statement, we will create a new Coffee object and add it to the array used to keep track of Coffee created so far i.e `allCoffee[]`, using the array's `push()` method. Inside the Coffee object, we will use the `block.timestamp` and `msg.sender` global variables to set the timestamp and buyer property of the Coffee respectively. We will also use the `_message`, `_name`, and `_amount` arguments entered into the function to initiaze the other property of the Coffee. We will also increase the `coffeeCount` variable by 1 after adding the new coffee to the array that keeps track of all the Coffee i.e `allCoffee[]`.
 
+> Note: We are incrementing the `coffeeCount` variable by 1 intentionally after every coffee purchase (irrespective of number of cups of coffee purchased) because we want to keep track of the number of times coffee was purchased for this author and not the number of cups of coffee purchased so far
+
 The next expression we will add to our function is the one that will be responsible for the transfer of cUSD tokens equivalent to the amount of coffee buyer is purchasing. We will use the `IERC20` interface we created earlier to get a connection to the cUSD contract deployed to the blockchain. We will then access the `transferFrom()` function from the contract to transfer cusd tokens from the account of person calling the contract to the contract owner.
+
+> The coffee amount has already been shifted to 18 decimals from the frontend so there is no need to repeat that inside the smart contract
 
 Check above to know what the `transferFrom()` function does. We will also wrap the whole operation in a require() statement that will throw an error with the message "Failed to transfer cUSD tokens" if the transaction did not go through.
 
@@ -174,28 +180,34 @@ Lastly, we will emit the event `CreateCoffee` if the transaction goes through su
 Below is the code that does all of the above:
 
 ```solidity
+ /// @notice Purchase coffee for contract owner
+    /// @param _message Message to attach to coffee purchase
+    /// @param _name Name of coffee buyer
+    /// @param _amount Amount of coffee to purchase
     function purchaseCoffee(
         string calldata _message,
         string calldata _name,
         uint256 _amount
     ) public payable {
         require(_amount > 0, "Invalid coffee amount specified");
-        uint256 donationAmount = _amount * 1 ether;
+        require(msg.sender != owner, "Owner can't purchase coffee for self");
+        require(bytes(_name).length > 0 && bytes(_message).length > 0, "Invalid Name or Message entered");
+        
         allCoffee.push(Coffee(
             block.timestamp,
             msg.sender,
             _message,
             _name,
-            donationAmount
+            _amount
         ));
 
-        coffeeCount = coffeeCount + _amount;
+        coffeeCount = coffeeCount + 1;
 
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
                 owner,
-                donationAmount
+                _amount
             ),
             "Failed to transfer cUSD tokens"
         );
@@ -304,7 +316,7 @@ contract CoffeeContract {
             _amount
         ));
 
-        coffeeCount = coffeeCount + _amount;
+        coffeeCount = coffeeCount + 1;
 
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
