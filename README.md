@@ -1,3 +1,4 @@
+
 # How to build a buy-me-a-coffee Dapp Using Celo Blockchain
 
 - _Estimated reading time: **18 minutes**_
@@ -17,15 +18,28 @@
 - [Conclusion](#conclusion)
 - [About the Author](#about-the-author)
 
-
-
-
 ## Introduction 
-Blockchain and Web3 has seen an enormous increase in user base and demand in recent times and this growth and high demand has not slowed down for once. Increase in user base means there is an increase in the demand for innovate solutions that will retain these users.
+Blockchain and Web3 have seen an enormous increase in user base and demand in recent times and this growth and high demand has not slowed down for once. An increase in user base means there is an increase in the demand for innovative solutions that will retain these users.
 
-In this tutorial, we will be building a decentralised application (dapp) that will allow anybody with access to the app to buy some coffee to the app owner which costs some amount of cyptocurrency. Every coffee purchased sends some amount of cryptocurrency to the owner's wallet. Follow along to learn how to build this amazing app.
+In this tutorial, we will be building a decentralized application (dapp) that will allow anybody with access to the dapp to donate or tip the creator of the smart contract through the concept of **Buy Me a Coffee**. Every coffee purchased sends some amount of cryptocurrency to the owner's wallet. Follow along to learn how to build this amazing dapp.
+
+
+### Table Of Contents
+- [Introduction](#introduction).
+- [Prerequisites](#prerequisites).
+- [Tech Stack](#tech-stack).
+- [Requirements](#requirements).
+- [Smart Contract Development](#smart-contract-development).
+- [Smart Contract Deployment](#smart-contract-deployment)
+- [Front-end Development](#front-end-development)
+    * [Create-React-App](#create-react-app)
+    * [The package.json file](#the-packagejson-file)
+    * [The contracts folder](#the-contracts-folder)
+    * [The App.js file](#the-appjs-file)
+ - [About the author](#about-the-author)
 
 ## Prerequisites 
+
 - Good understanding of [Solidity language basics](https://solidity-by-example.org) 
 - Good understanding of [JavaScript programming basics](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 - Basic understanding of [command line interface (CLI)](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Understanding_client-side_tools/Command_line)
@@ -54,9 +68,10 @@ Start the file by setting the file license. Click on [this link](https://spdx.or
 
 ```solidity
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 ```
 
-Next, we will create an interface and name it `IERC20Token`. This interface allows us to interract with ERC20 tokens deployed to the Ethereum and other EVM compatible chain such as Celo blockchain.
+Next, we will create an interface and name it `IERC20Token`. This interface allows us to interact with ERC20 tokens deployed to the Ethereum and other EVM-compatible chains such as the Celo blockchain.
 
 ```solidity
 interface IERC20Token {
@@ -84,14 +99,16 @@ interface IERC20Token {
     );
 }
 ```
-Below is an explanation of the functions inside the interface:
+
+Below is an explanation of the functions inside the ERC20 interface
+
 - `transfer(address, uint256)` - Allows transfer of tokens from caller account to `address` account
 - `approve(address, uint256)` - Approves `address` to spend some quantity of tokens from caller account
-- `transferFrom(address, address, uint256)` - Transfer some quantity of tokens from from one address to another
+- `transferFrom(address, address, uint256)` - Transfer some quantity of tokens from one address to another
 - `totalSupply()` - Returns the total supply of the token
 - `balanceOf(address)` - Returns how many tokens `address` has
 - `allowance(address, address)` - Returns how many tokens an account is allowed to spend on behalf of another account
-- `Transfer` and `Approval` event - Events that are emitted when either one of the events occur
+- `Transfer` and `Approval` events - Events that are emitted when either one of the events occurs
 
 After creating the inteface out contract will be using, now let's create the actual contract. In the next step, we will create our contract and name it `CoffeeContract`. This is intentionally same with the file name because Solidity demands that we do this by convention.
 
@@ -109,11 +126,9 @@ After creating our contract, the next step is to fill the body of our contract w
 
 Below the struct, we also proceed to create an event that will be emitted when a new Coffee is created. We named the event `CreatedCoffee`. The event has three parameters - `buyer`, `message`, and `amount`.
 
-Below the event, we proceed to create an array of `Coffee` objects. This array holds all the Coffee that will be created for this dapp. We named the array `allCoffee[]`. 
-
 In the next couple of lines, we will create three variables - `coffeeCount`, `owner`, and `cUsdTokenAddress`. `owner` stores the owner address of the contract who receives all assets sent to the contract. `coffeeCount` keeps track of how many coffee has been created so far. `cUsdTokenAddress` stores the address of the official cUSD token deployed to the Celo Alfajores testnet.
 
-Below is the code for all the description above. Paste the code inside the body of our cotract i.e `CoffeeContract`.
+Below is the code for all of the descriptions above. Paste the code inside the body of our contract i.e `CoffeeContract`.
 
 ```solidity
     struct Coffee {
@@ -136,7 +151,6 @@ Below is the code for all the description above. Paste the code inside the body 
     address payable immutable owner;
     address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 ```
-
 After completely adding the state variables of our contract, we will add the functions in the next steps. The first function we will be adding is the constructor function. The constructor function is executed once and only at construction time. After this time, the constructor function is never executed. Our constructor function will be used to initialize the owner of the contract. It will set this owner to whoever deployed the contract. Below is the code for our constructor:
 
 ```solidity
@@ -166,23 +180,22 @@ Below is the code that does all of the above:
         uint256 _amount
     ) public payable {
         require(_amount > 0, "Invalid coffee amount specified");
-        
+        uint256 donationAmount = _amount * 1 ether;
         allCoffee.push(Coffee(
             block.timestamp,
             msg.sender,
             _message,
             _name,
-            _amount
+            donationAmount
         ));
 
-        coffeeCount = coffeeCount + 1;
+        coffeeCount = coffeeCount + _amount;
 
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
                 owner,
-                // _amount * 1 ether
-                _amount
+                donationAmount
             ),
             "Failed to transfer cUSD tokens"
         );
@@ -291,13 +304,12 @@ contract CoffeeContract {
             _amount
         ));
 
-        coffeeCount = coffeeCount + 1;
+        coffeeCount = coffeeCount + _amount;
 
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
                 owner,
-                // _amount * 1 ether
                 _amount
             ),
             "Failed to transfer cUSD tokens"
@@ -527,7 +539,7 @@ const App = () => {
       await contract.methods.purchaseCoffee(
         buyerMessage,
         buyerName,
-        amount
+        buyerAmount
       ).send({from: kit.defaultAccount})
     } catch (e) {
       console.log(e)
@@ -584,6 +596,7 @@ The second function fetches the balance of the connect wallet and stores it to t
 
 The third function (`getCoffee()`) fetches all the coffee purchased to the contract owner so far. It also stores it to React state. 
 
+
 The next function (`approvePayment()`) is used to approve our contract to spend some certain amount of tokens from our wallet.
 
 The last function we created - `purchase()`, will be used to purchase some coffee for the owner. It takes in the quantity and convert it to a big number using the Javascript's `bignumber.js` package. Javascript can't handle numbers that large properly e.g number with 18 zeros, that is why we are using a library for that. The function firsts calls the `approvePayment()` function to approve our contract to spend that amount of tokens before calling our contract function.
@@ -595,9 +608,9 @@ The last line of code exports the `App` component we created.
 ## Conclusion
 That is it for our **_buy-me-coffee_** dapp that runs on the Celo blockchain. Hope you were able to follow all the steps correctly.
 
-The complete source code for our app can be found [in this link](https://github.com/jamescodex/coffee_app)
+The complete source code for our app can be found [at this link](https://github.com/jamescodex/coffee_app)
 
 Thank you for reading!
 
 ## About the Author 
-I am a college student with the passion for Web 3 and smart contract development. Love to write about what I have learnt so far.
+I am a college student with a passion for Web 3 and smart contract development. Love to write about what I have learned so far.
